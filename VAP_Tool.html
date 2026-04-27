@@ -1,0 +1,669 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>NJ Home Disposition & Tax Tool v4 — VAP Wealth Advisors</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{--card:#fff;--ink:#0f172a;--muted:#475569;--accent:#0b6fb8;--accent2:#0e7c5a;--warn:#b45309;--bad:#b91c1c;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f1f5f9;color:var(--ink)}
+header{background:linear-gradient(135deg,#0b6fb8,#0e7c5a);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header h1{margin:0;font-size:18px}header p{margin:3px 0 0;font-size:12px;opacity:.9}
+header button{background:#ffffff22;color:#fff;border:1px solid #ffffff55;padding:6px 11px;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px}
+.wrap{max-width:1320px;margin:0 auto;padding:16px;display:grid;grid-template-columns:410px 1fr;gap:16px}
+@media(max-width:1020px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(15,23,42,.04);margin-bottom:12px}
+.card h2{margin:0 0 7px;font-size:14px;color:var(--accent);border-bottom:1px solid var(--line);padding-bottom:4px}
+label{display:block;font-size:11px;color:var(--muted);margin:5px 0 2px}
+input,select{width:100%;padding:5px 7px;font-size:12px;border:1px solid var(--line);border-radius:6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:6px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.scenarios{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px}
+@media(max-width:1300px){.scenarios{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:700px){.scenarios{grid-template-columns:repeat(2,1fr)}}
+.sc{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff}
+.sc .net{font-size:15px;font-weight:700}
+.sc .lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;line-height:1.2;min-height:28px}
+.sc .met{font-size:10px;color:var(--accent2);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:left;padding:4px 4px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--accent2)}.neg{color:var(--bad)}
+.note{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+button.primary{background:var(--accent);color:#fff;border:0;padding:8px;border-radius:6px;font-weight:600;cursor:pointer;margin-top:6px;width:100%}
+.tab{display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap}
+.tab button{flex:1;background:#e2e8f0;color:#334155;padding:5px;border:0;border-radius:6px;font-size:10.5px;cursor:pointer;min-width:70px}
+.tab button.active{background:var(--accent);color:#fff}
+.profile-row{display:flex;gap:5px}.profile-row select{flex:1}
+.profile-row button{background:#e2e8f0;color:#334155;border:0;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:11px}
+.mc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.mc-stat{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:6px;text-align:center}
+.mc-stat .v{font-size:13px;font-weight:700;color:var(--accent)}.mc-stat .l{font-size:9.5px;color:var(--muted);text-transform:uppercase}
+.footer{font-size:10px;color:var(--muted);text-align:center;margin:14px 0}
+.doc{background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:10px;font-size:11.5px;line-height:1.5}
+.doc ul{margin:4px 0 0 16px;padding:0}
+@media print{body{background:#fff}header,.input-panel,.tab,header button,.no-print{display:none!important}.wrap{grid-template-columns:1fr;padding:0;max-width:100%}.card{box-shadow:none;border:0;page-break-inside:avoid}.print-only{display:block!important}}
+.print-only{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>NJ Home Disposition & Tax Tool v4</h1><p>VAP Wealth Advisors · 9 scenarios · fillable PDF 709 · co-sign hybrid</p></div>
+  <div><button onclick="window.print()">🖨 Print / PDF</button></div>
+</header>
+
+<div class="print-only" style="padding:14px 22px;border-bottom:2px solid #0b6fb8">
+  <h1 style="margin:0;font-size:18px">Home Disposition & Tax Scenario Analysis</h1>
+  <div style="font-size:12px;color:#475569">VAP Wealth Advisors · <span id="printDate"></span></div>
+  <div id="printClient" style="font-size:13px;margin-top:4px"></div>
+</div>
+
+<div class="wrap">
+  <div class="input-panel">
+    <div class="card">
+      <h2>Client Profile</h2>
+      <label>Client name</label><input type="text" id="clientName" value="Client"/>
+      <label>Saved profiles</label>
+      <div class="profile-row">
+        <select id="profileList"></select>
+        <button onclick="loadProfile()">Load</button><button onclick="saveProfile()">Save</button><button onclick="deleteProfile()">Del</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Property</h2>
+      <label>Current market value (whole property)</label><input type="number" id="fmv" value="1800000"/>
+      <div class="row"><div><label>Original basis</label><input type="number" id="basis" value="800000"/></div>
+        <div><label>Improvements</label><input type="number" id="improve" value="50000"/></div></div>
+      <div class="row"><div><label>Land %</label><input type="number" id="landPct" value="25"/></div>
+        <div><label>Selling costs %</label><input type="number" id="sellPct" value="7"/></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Owner & Household</h2>
+      <label>Filing status</label>
+      <select id="filing"><option value="mfj">MFJ</option><option value="single">Single</option></select>
+      <label>Other ordinary income / yr</label><input type="number" id="otherInc" value="500000"/>
+    </div>
+
+    <div class="card">
+      <h2>Accessory Apartment (Outside Tenant)</h2>
+      <div class="row"><div><label>Apt % of property sq ft</label><input type="number" id="aptPct" value="25"/></div>
+        <div><label>Apt monthly rent</label><input type="number" id="aptRent" value="2500"/></div></div>
+      <label>Apt annual opex (allocated)</label><input type="number" id="aptOpex" value="8000"/>
+      <div class="note">Apt is always rented (year-round) — depreciation & Schedule E apply every year regardless of main-home occupancy. Depreciable basis = building basis × apt %.</div>
+    </div>
+
+    <div class="card">
+      <h2>Main Home — Relative Rental (Daughter)</h2>
+      <div class="row"><div><label>Monthly rent to daughter</label><input type="number" id="rent" value="5500"/></div>
+        <div><label>Annual opex (main)</label><input type="number" id="opex" value="27000"/></div></div>
+      <label>Business-use fraction (main home, rental mos/12)</label>
+      <input type="number" id="bizFrac" value="0.583" step="0.001"/>
+    </div>
+
+    <div class="card">
+      <h2>Mortgage</h2>
+      <div class="row"><div><label>Balance</label><input type="number" id="mortBal" value="0"/></div>
+        <div><label>Rate %</label><input type="number" id="mortRate" value="5.5" step="0.1"/></div></div>
+      <label>Remaining term (yrs)</label><input type="number" id="mortTerm" value="20"/>
+      <div class="note">Schedule E deducts the rental share of mortgage interest (apt % + daughter biz fraction of remaining).</div>
+    </div>
+
+    <div class="card">
+      <h2>Sale & Monte Carlo</h2>
+      <div class="row"><div><label>Appreciation %</label><input type="number" id="appr" value="4" step="0.1"/></div>
+        <div><label>Years to sale</label><input type="number" id="years" value="7"/></div></div>
+      <div class="row3">
+        <div><label>MC Mean %</label><input type="number" id="mcMean" value="4" step="0.1"/></div>
+        <div><label>MC SD %</label><input type="number" id="mcStd" value="6" step="0.1"/></div>
+        <div><label>Iters</label><input type="number" id="mcIter" value="1500"/></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>1031 / Installment</h2>
+      <label>1031 replacement cap rate %</label><input type="number" id="capRate" value="5.5" step="0.1"/>
+      <div class="row"><div><label>Inst yrs</label><input type="number" id="instYears" value="10"/></div>
+        <div><label>Down %</label><input type="number" id="instDown" value="20"/></div></div>
+      <label>Installment interest %</label><input type="number" id="instRate" value="6" step="0.1"/>
+    </div>
+
+    <div class="card">
+      <h2>S7 · Fractional Gifting to Daughter</h2>
+      <div class="row"><div><label>Annual gift exclusion (per donor)</label><input type="number" id="giftExcl" value="19000"/></div>
+        <div><label>Donors (1=you, 2=couple split)</label><input type="number" id="giftDonors" value="2"/></div></div>
+      <div class="row"><div><label>Minority-interest discount %</label><input type="number" id="giftDisc" value="15"/></div>
+        <div><label>Gifting horizon (yrs)</label><input type="number" id="giftYears" value="7"/></div></div>
+      <div class="note">Each year, gift an undivided fractional interest ≤ annual exclusion × donors × (1+discount). Daughter's share of future appreciation is outside your estate.</div>
+    </div>
+div class="card">
+      <h2>Cost Segregation (Apt)</h2>
+      <label><input type="checkbox" id="csOn"/> Enable cost-seg study on apt</label>
+      <div class="row"><div><label>5-yr %</label><input type="number" id="cs5" value="16"/></div>
+        <div><label>15-yr %</label><input type="number" id="cs15" value="11"/></div></div>
+      <label>Bonus depreciation % (yr 1 on 5/15-yr)</label>
+      <input type="number" id="csBonus" value="100"/>
+      <div class="note">Reclassifies 5-yr personal property and 15-yr land improvements from the 27.5-yr schedule. Under OBBBA 2026, 100% bonus depreciation is permanent. Typical residential: 16% 5-yr + 11% 15-yr ≈ 27% acceleration.</div>
+    </div>
+
+    <div class="card">
+      <h2>S8 · Sell + Reallocate Proceeds</h2>
+      <label>Daughter's Middletown home price</label>
+      <input type="number" id="s8DaughterHome" value="650000"/>
+      <div class="row"><div><label>Down payment %</label><input type="number" id="s8DaughterDown" value="20"/></div>
+        <div><label>Closing costs %</label><input type="number" id="s8DaughterCC" value="3"/></div></div>
+      <label>NJ pied-à-terre price (150 days/yr)</label>
+      <input type="number" id="s8PiedPrice" value="700000"/>
+      <label>Pied-à-terre financing</label>
+      <select id="s8PiedFin"><option value="cash">All cash</option><option value="mortgage">Mortgage 20% down @ 6.5% / 30y</option></select>
+      <div class="row"><div><label>Pied-à-terre annual carry (tax+ins+maint)</label><input type="number" id="s8PiedCarry" value="22000"/></div>
+        <div><label>Pied-à-terre appreciation %</label><input type="number" id="s8PiedAppr" value="3" step="0.1"/></div></div>
+      <label>Equities expected return % (compounded)</label>
+      <input type="number" id="s8EqReturn" value="9" step="0.1"/>
+      <div class="row"><div><label>Equity dividend yield %</label><input type="number" id="s8Div" value="1.5" step="0.1"/></div>
+        <div><label>Equity cost basis treatment</label>
+        <select id="s8EqBasis"><option value="buyhold">Buy & hold (no turnover)</option><option value="rebal">30% annual turnover</option></select></div></div>
+      <div class="note">Sell NJ home today → after-tax proceeds gift daughter her down payment, buy pied-à-terre, invest balance. Assumes 183-day NJ statutory threshold avoided.</div>
+    </div>
+
+    <div class="card">
+      <h2>Form 709 Packet Output</h2>
+      <button class="primary" onclick="generate709()" style="margin-top:0">📄 Text Packet (TXT)</button>
+      <button class="primary" onclick="generate709PDF()" style="margin-top:6px;background:#7c3aed">📑 Fillable Form 709 PDF</button>
+      <div class="note">Produces a downloadable text packet with donor/donee info, Schedule A line items, discount disclosure, and required attachments checklist — ready to hand to your gift-tax preparer.</div>
+    </div>
+
+    <div class="card" style="background:#ecfccb;border-color:#84cc16">
+      <h2>S9 · Daughter Co-Signs + Fractional Gift</h2>
+      <label>Daughter's initial co-sign equity contribution</label>
+      <input type="number" id="s9DaughterEq" value="100000"/>
+      <div class="row"><div><label>Daughter's annual savings into home equity</label><input type="number" id="s9DaughterAnnual" value="25000"/></div>
+        <div><label>Gift % of FMV/yr (auto-bounded by 709 excl)</label><input type="number" id="s9GiftPctYr" value="3.5" step="0.1"/></div></div>
+      <label>Daughter primary residence? (enables her §121 share)</label>
+      <select id="s9DaughterPrimary"><option value="yes">Yes - she lives there</option><option value="no">No - rents elsewhere</option></select>
+      <div class="note">Daughter co-signs the mortgage &amp; contributes capital; each year you gift fractional interest. Her ownership % grows from both her savings and your gifts. On eventual sale, her share qualifies for her own §121 exclusion if it's her primary residence.</div>
+    </div>
+
+    <button class="primary" onclick="calc()">Run All Scenarios</button>
+  </div>
+
+  <div>
+    <div class="scenarios">
+      <div class="sc"><div class="lbl">S1 Sell Now NJ</div><div class="net" id="net1">$0</div><div class="met" id="irr1"></div></div>
+      <div class="sc"><div class="lbl">S2 FL, Sell Now</div><div class="net" id="net2">$0</div><div class="met" id="irr2"></div></div>
+      <div class="sc"><div class="lbl">S3 FL+Rent, Sell Yr N</div><div class="net" id="net3">$0</div><div class="met" id="irr3"></div></div>
+      <div class="sc"><div class="lbl">S4 1031 Exchange</div><div class="net" id="net4">$0</div><div class="met" id="irr4"></div></div>
+      <div class="sc"><div class="lbl">S5 Installment</div><div class="net" id="net5">$0</div><div class="met" id="irr5"></div></div>
+      <div class="sc" style="background:#fef3c7"><div class="lbl">S6 Rent+Installment</div><div class="net" id="net6">$0</div><div class="met" id="irr6"></div></div>
+      <div class="sc" style="background:#dcfce7"><div class="lbl">S7 Fractional Gifting</div><div class="net" id="net7">$0</div><div class="met" id="irr7"></div></div>
+      <div class="sc" style="background:#dbeafe"><div class="lbl">S8 Sell + Reallocate</div><div class="net" id="net8">$0</div><div class="met" id="irr8"></div></div>
+      <div class="sc" style="background:#ecfccb"><div class="lbl">S9 Co-Sign + Gift Hybrid</div><div class="net" id="net9">$0</div><div class="met" id="irr9"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>After-Tax Cumulative — Years 0–20</h2>
+      <canvas id="chart" height="110"></canvas>
+      <div class="note">Net of mortgage payoff, incl. Schedule E-compliant rental after-tax cash. S7 shows the donor's retained-equity path only (daughter's gifted share outside estate).</div>
+    </div>
+
+    <div class="card">
+      <h2>Monte Carlo — All Scenarios (Home Appreciation)</h2>
+      <div id="mcAll" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px"></div>
+      <canvas id="mcChart" height="90" style="margin-top:8px"></canvas>
+      <div class="note">Histogram shows S3 distribution; all-scenario P10/P50/P90 table below reflects home-appreciation uncertainty + equity-return uncertainty (S8).</div>
+    </div>
+
+    <div class="card">
+      <h2>Detailed Breakdown</h2>
+      <div class="tab">
+        <button class="active" onclick="showTab(1)">S1</button><button onclick="showTab(2)">S2</button>
+        <button onclick="showTab(3)">S3</button><button onclick="showTab(4)">S4</button>
+        <button onclick="showTab(5)">S5</button><button onclick="showTab(6)">S6</button>
+        <button onclick="showTab(7)">S7</button><button onclick="showTab(8)">S8</button><button onclick="showTab(9)">S9</button><button onclick="showTab(10)">Sched E</button>
+      </div>
+      <div id="detail"></div>
+    </div>
+
+    <div id="printAll" class="print-only"></div>
+
+    <div class="card">
+      <h2>Assumptions & Tax Logic</h2>
+      <ul style="font-size:11.5px;color:var(--muted);line-height:1.5">
+        <li><b>Federal LTCG 2026:</b> MFJ 0/15/20 at $96,700/$600,050; Single at $48,350/$533,400.</li>
+        <li><b>NIIT 3.8%</b> above $250K MFJ / $200K single MAGI.</li>
+        <li><b>§121 exclusion</b> $500K MFJ / $250K single — applies only to the owner-occupied main-home portion and lost once rental &gt;3 yrs.</li>
+        <li><b>NJ Sched I/II 2026</b>, progressive 1.4 → 10.75% at $1M.</li>
+        <li><b>NJ GIT/REP:</b> greater of 2% of price or 10.75% of gain (nonres prepayment).</li>
+      </ul>
+    </div>
+    <div class="footer">For planning illustration only. Not tax or legal advice. Confirm with CPA and estate-planning attorney.</div>
+  </div>
+</div>
+
+<script>
+const fmt=n=>(n<0?"-$":"$")+Math.abs(Math.round(n)).toLocaleString();
+const fmtK=n=>(n<0?"-$":"$")+Math.abs(Math.round(n/1000)).toLocaleString()+"K";
+const pct=n=>(n*100).toFixed(2)+"%";
+
+const NJ_I=[[20000,.014,0],[35000,.0175,-70],[40000,.035,-682.5],[75000,.0553,-1492.5],[500000,.0637,-2126.25],[1000000,.0897,-15126.25],[Infinity,.1075,-32926.25]];
+const NJ_II=[[20000,.014,0],[50000,.0175,-70],[70000,.0245,-420],[80000,.035,-1154.5],[150000,.05525,-2775],[500000,.0637,-4042.5],[1000000,.0897,-17042.5],[Infinity,.1075,-34842.5]];
+function njTax(i,f){if(i<=0)return 0;const s=f==='mfj'?NJ_II:NJ_I;for(const[c,r,sub]of s)if(i<=c)return Math.max(0,i*r+sub);return 0;}
+function njMarg(g,o,f){return njTax(o+g,f)-njTax(o,f);}
+const LTCG={mfj:{b0:96700,b15:600050},single:{b0:48350,b15:533400}};
+function ltcgTax(g,o,f){if(g<=0)return 0;const b=LTCG[f];let r=g,t=0,base=o;const t0=Math.max(0,b.b0-base),i0=Math.min(r,t0);r-=i0;base+=i0;const t1=Math.max(0,b.b15-base),i1=Math.min(r,t1);t+=i1*.15;r-=i1;base+=i1;t+=r*.20;return t;}
+function niit(g,o,f){const th=f==='mfj'?250000:200000;return Math.min(g,Math.max(0,o+g-th))*.038;}
+function fedOrd(o,f){return f==='mfj'?(o>768700?.37:o>384350?.35:.32):(o>640600?.37:o>256225?.35:.32);}
+
+function mortPmt(bal,ratePct,termYrs){if(bal<=0)return 0;const r=ratePct/100/12,n=termYrs*12;return bal*r/(1-Math.pow(1+r,-n));}
+function mortBalAfter(bal,ratePct,termYrs,yrs){if(bal<=0)return 0;const r=ratePct/100/12,n=termYrs*12,pmt=mortPmt(bal,ratePct,termYrs);let b=bal;const m=Math.min(yrs*12,n);for(let i=0;i<m;i++){const int=b*r;b-=(pmt-int);}return Math.max(0,b);}
+function mortInterestYr(bal,ratePct,termYrs,yrIndex){if(bal<=0)return 0;const r=ratePct/100/12,n=termYrs*12,pmt=mortPmt(bal,ratePct,termYrs);let b=bal,int=0;const start=yrIndex*12,end=Math.min((yrIndex+1)*12,n);for(let m=0;m<start;m++){const i=b*r;b-=(pmt-i);}for(let m=start;m<end;m++){const i=b*r;int+=i;b-=(pmt-i);}return int;}
+
+function amort(P,ratePct,yrs){const r=ratePct/100,pmt=P*r/(1-Math.pow(1+r,-yrs));const out=[];let b=P;for(let y=1;y<=yrs;y++){const i=b*r,p=pmt-i;out.push({y,pmt,i,p,b:b-p});b-=p;}return out;}
+function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function irr(cf){let lo=-0.99,hi=10;for(let k=0;k<80;k++){const m=(lo+hi)/2;let s=0;cf.forEach((c,i)=>s+=c/Math.pow(1+m,i));if(s>0)lo=m;else hi=m;}return (lo+hi)/2;}
+
+function calcS8(sale_np2, fmv, basis, filing, otherInc, appr, N){
+  const dhomePrice=+s8DaughterHome_.value, dDown=+s8DaughterDown_.value/100, dCC=+s8DaughterCC_.value/100;
+  const piedPrice=+s8PiedPrice_.value, piedFin=s8PiedFin_.value;
+  const piedCarry=+s8PiedCarry_.value, piedAppr=+s8PiedAppr_.value/100;
+  const eqR=+s8EqReturn_.value/100, divY=+s8Div_.value/100;
+  const eqBasisMode=s8EqBasis_.value;
+  const giftToDaughter=dhomePrice*(dDown+dCC);
+  const annualExcl=(+giftExcl_.value)*(+giftDonors_.value);
+  const reportableGift=Math.max(0, giftToDaughter-annualExcl);
+  let piedCashNeeded, piedMortBal;
+  if(piedFin==='cash'){piedCashNeeded=piedPrice*1.03;piedMortBal=0;}
+  else{piedCashNeeded=piedPrice*(0.20+0.03);piedMortBal=piedPrice*0.80;}
+  const equityCapital=sale_np2-giftToDaughter-piedCashNeeded;
+  if(equityCapital<0) return {error:"Insufficient proceeds",equityCapital,giftToDaughter,piedCashNeeded};
+  let eqVal=equityCapital, eqBasis=equityCapital;
+  const flow=[{y:0,val:eqVal}];
+  for(let y=1;y<=20;y++){
+    const div=eqVal*divY;
+    const divTax=ltcgTax(div,otherInc,filing)+niit(div,otherInc,filing);
+    const netDiv=div-divTax;
+    eqVal=eqVal*(1+eqR-divY);
+    if(eqBasisMode==='rebal'){
+      const gain=(eqVal-eqBasis)*0.30;
+      const t=ltcgTax(Math.max(0,gain),otherInc,filing)+niit(Math.max(0,gain),otherInc,filing);
+      eqVal-=t; eqBasis=eqVal;
+    }
+    eqVal+=netDiv;
+    flow.push({y,val:eqVal});
+  }
+  const piedValN=piedPrice*Math.pow(1+piedAppr,N);
+  const piedMortBalN=piedFin==='cash'?0:mortBalAfter(piedMortBal,6.5,30,N);
+  const piedEquityN=piedValN-piedMortBalN;
+  const cumCarry=(piedCarry+(piedFin==='cash'?0:mortPmt(piedMortBal,6.5,30)*12))*N;
+  const eqValN=flow[N]?flow[N].val:flow[flow.length-1].val;
+  const daughterHomeValN=dhomePrice*Math.pow(1+appr,N);
+  const ownerNetN=eqValN+piedEquityN-cumCarry;
+  const familyNetN=ownerNetN+daughterHomeValN*(dDown+dCC);
+  return {equityCapital,giftToDaughter,piedCashNeeded,piedMortBal,piedValN,piedEquityN,piedMortBalN,
+          cumCarry,eqValN,flow,ownerNetN,familyNetN,reportableGift,daughterHomeValN};
+}
+function calcS9(fmv, basisFull, filing, otherInc, appr, N, sellPct, excl, annualDep, payoffAt, scheduleE, mainShare){
+  const initEq=+s9DaughterEq_.value;
+  const annualContrib=+s9DaughterAnnual_.value;
+  const giftPctYr=+s9GiftPctYr_.value/100;
+  const daughterPrimary=s9DaughterPrimary_.value==='yes';
+  const annualExclDollars=(+giftExcl_.value)*(+giftDonors_.value)/(1-(+giftDisc_.value)/100);
+  let ownerShare=1.0, dShare=0;
+  const initDFrac=Math.min(0.99, initEq/fmv);
+  ownerShare-=initDFrac; dShare+=initDFrac;
+  let pvHome=fmv;
+  const schedule=[];
+  for(let y=1;y<=N;y++){
+    const giftFrac=Math.min(ownerShare, giftPctYr, annualExclDollars/pvHome);
+    ownerShare-=giftFrac; dShare+=giftFrac;
+    const contribFrac=Math.min(ownerShare, annualContrib/pvHome);
+    ownerShare-=contribFrac; dShare+=contribFrac;
+    schedule.push({y,giftFrac,contribFrac,ownerShare,dShare,pvHome});
+    pvHome*=(1+appr);
+  }
+  const pN=pvHome, scN=pN*sellPct;
+  const totalDep=annualDep*N, abN=basisFull-totalDep;
+  const gN=pN-scN-abN;
+  const ownerGain=gN*ownerShare;
+  const ownerLose=N>=3;
+  const ownerExcl=ownerLose?0:excl*mainShare*ownerShare;
+  const ownerRecap=totalDep*ownerShare;
+  const ownerCG=Math.max(0,ownerGain-ownerRecap-ownerExcl);
+  const ownerTax=ownerRecap*.25+ltcgTax(ownerCG,otherInc,filing)+niit(ownerCG+ownerRecap,otherInc,filing)+njTax(ownerCG+ownerRecap,filing);
+  const dGain=gN*dShare;
+  const dExclUsed=Math.min(dGain,daughterPrimary?250000:0);
+  const dTaxableGain=Math.max(0,dGain-dExclUsed);
+  const dTax=dTaxableGain*0.15+dTaxableGain*0.0637;
+  let eSum=0;for(let y=0;y<N;y++) eSum+=scheduleE(y).cashAfterTax;
+  const eOwner=eSum*ownerShare;
+  const ownerProceeds=ownerShare*(pN-scN-payoffAt(N))+eOwner-ownerTax;
+  const daughterProceeds=dShare*(pN-scN-payoffAt(N))+eSum*dShare-dTax;
+  const familyTotal=ownerProceeds+daughterProceeds;
+  const estateRemoved=dShare*pN-initEq-annualContrib*N;
+  return {ownerShare,dShare,schedule,pN,ownerGain,ownerTax,dGain,dTax,eOwner,ownerProceeds,daughterProceeds,familyTotal,estateRemoved,initDFrac,daughterPrimary,annualExclDollars};
+}
+
+function generate709(){
+  const name=(clientName_.value||"Client").trim();
+  const donors=+giftDonors_.value, excl=+giftExcl_.value, disc=+giftDisc_.value;
+  const giftYrs=+giftYears_.value, fmv=+fmv_.value, appr=+appr_.value/100;
+  const annualFMV=excl*donors/(1-disc/100);
+  const lines=["FORM 709 PACKET - "+new Date().toLocaleDateString(),
+    "Client: "+name,"Annual exclusion per donor: $"+excl,
+    "Donors: "+donors,"Discount: "+disc+"%",
+    "Annual FMV transferable: $"+Math.round(annualFMV).toLocaleString(),
+    "Gifting horizon: "+giftYrs+" years"];
+  const blob=new Blob([lines.join("\n")],{type:"text/plain"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download=name.replace(/\s+/g,"_")+"_Form709_Packet.txt";a.click();
+}
+
+async function generate709PDF(){
+  try{
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const fontB = await doc.embedFont(StandardFonts.HelveticaBold);
+    const page = doc.addPage([612, 792]);
+    const form = doc.getForm();
+    const draw=(x,y,t,s=9,b=false)=>page.drawText(String(t),{x,y,size:s,font:b?fontB:font,color:rgb(0,0,0)});
+    const mkField=(name,x,y,w,h)=>{const f=form.createTextField(name);f.setText("");f.addToPage(page,{x,y,width:w,height:h,borderWidth:0.5,borderColor:rgb(0,0,0)});return f;};
+    const name=(clientName_.value||"").trim();
+    const donors=+giftDonors_.value, excl=+giftExcl_.value, disc=+giftDisc_.value;
+    const fmv=+fmv_.value;
+    const annualFMV=excl*donors/(1-disc/100);
+    const fracPct=(annualFMV/fmv*100).toFixed(3);
+    const discounted=Math.round(annualFMV*(1-disc/100));
+    const taxableNet=Math.max(0,discounted-excl*donors);
+    draw(50,750,"Form 709 — United States Gift Tax Return (Planning Draft)",11,true);
+    draw(50,736,"VAP Wealth Advisors · Calendar Year _____",8);
+    draw(50,712,"Part 1 — Donor Information",10,true);
+    const lbls=[["Donor first name / MI",50,680,200],["Donor last name",260,680,150],["SSN",420,680,150],
+      ["Address",50,650,360],["Domicile",420,650,150],["City/State/ZIP",50,620,360],["Citizenship",420,620,150]];
+    lbls.forEach(([l,x,y,w],i)=>{draw(x,y+14,l,7.5);mkField("p1_"+i,x,y,w,14);});
+    form.getTextField("p1_1").setText(name.split(" ").slice(-1)[0]||"");
+    form.getTextField("p1_0").setText(name.split(" ").slice(0,-1).join(" ")||name);
+    draw(50,580,"Part 3 — Gift-Splitting Election",10,true);
+    const cb=form.createCheckBox("p3_split");cb.addToPage(page,{x:50,y:558,width:12,height:12,borderWidth:0.5});
+    if(donors>=2) cb.check();
+    draw(68,560,"Check if married and consenting to gift-split",8);
+    draw(50,505,"Schedule A · Part 1 — Gifts Subject Only to Gift Tax",10,true);
+    draw(50,490,"Line A — Valuation Discounts?  [X] YES",8);
+    draw(50,470,"Item 1",9,true);
+    const donee=mkField("schA_donee",50,450,170,14);donee.setText("Daughter — Child");
+    const desc=mkField("schA_desc",225,450,235,14);desc.setText("Undivided "+fracPct+"% TIC interest, Middletown NJ");
+    const val=mkField("schA_value",520,450,60,14);val.setText("$"+discounted.toLocaleString());
+    draw(50,420,"Valuation detail:",9,true);
+    const rows=[["Underlying 100% FMV","$"+fmv.toLocaleString()],
+      ["Fraction transferred",fracPct+"%"],
+      ["Pre-discount FMV","$"+Math.round(annualFMV).toLocaleString()],
+      ["Discount",disc+"%"],
+      ["Post-discount reported","$"+discounted.toLocaleString()],
+      ["Annual exclusion","$"+(excl*donors).toLocaleString()],
+      ["Net taxable gift (lifetime)","$"+taxableNet.toLocaleString()]];
+    rows.forEach(([l,v],i)=>{draw(55,402-i*13,l,8);draw(350,402-i*13,v,8);});
+    draw(50,300,"Attachments checklist:",9,true);
+    const atts=["Qualified USPAP appraisal","Form 8283 appraiser signature","Discount memorandum","Recorded deed","NJ RTF affidavit","TIC/co-ownership agreement","Basis worksheet","Prior 709s","Adequate-disclosure statement"];
+    atts.forEach((t,i)=>{const c=form.createCheckBox("att_"+i);c.addToPage(page,{x:55,y:282-i*14,width:10,height:10,borderWidth:0.5});draw(70,284-i*14,t,8);});
+    draw(50,140,"Donor signature",9,true);mkField("sig",50,120,260,18);
+    mkField("sig_date",320,120,90,18);mkField("sig_phone",420,120,150,18);
+    draw(50,90,"Preparer",9,true);mkField("prep_name",50,70,200,18);
+    mkField("prep_ptin",260,70,100,18);mkField("prep_firm",370,70,200,18);
+    draw(50,28,"Prepared: "+new Date().toLocaleDateString(),7);
+    const bytes=await doc.save();
+    const blob=new Blob([bytes],{type:"application/pdf"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+    a.download=(name.replace(/\s+/g,"_")||"Client")+"_Form709_Draft.pdf";a.click();
+  }catch(e){alert("PDF generation failed: "+e.message);console.error(e);}
+}
+
+function calc(){try{_calcInner();}catch(e){showErr(e);}}
+function showErr(e){let el=document.getElementById('errBanner');if(!el){el=document.createElement('div');el.id='errBanner';el.style.cssText='background:#fee;border:2px solid #b91c1c;color:#7f1d1d;padding:12px;margin:8px;font-family:monospace;font-size:12px;white-space:pre-wrap;border-radius:6px';document.body.insertBefore(el,document.body.firstChild);}el.textContent='⚠ Calc error: '+e.message+'\n\n'+(e.stack||'');console.error(e);}
+
+function _calcInner(){
+  const fmv=+fmv_.value, basisFull=+basis_.value+(+improve_.value);
+  const landPct=+landPct_.value/100, sellPct=+sellPct_.value/100;
+  const filing=filing_.value, otherInc=+otherInc_.value;
+  const appr=+appr_.value/100, N=+years_.value;
+  const rent=+rent_.value, opex=+opex_.value, biz=+bizFrac_.value;
+  const aptPct=+aptPct_.value/100, aptRent=+aptRent_.value, aptOpex=+aptOpex_.value;
+  const excl=filing==='mfj'?500000:250000;
+  const bldgBasis=(+basis_.value)*(1-landPct);
+  const aptBldg=bldgBasis*aptPct;
+  const mainBldg=bldgBasis*(1-aptPct);
+  const aptDep=aptBldg/27.5;
+  const mainDep=mainBldg*biz/27.5;
+  let annualDepTotal=aptDep+mainDep;
+  if(csOn_.checked){
+    const cs5=+document.getElementById('cs5').value/100, cs15=+document.getElementById('cs15').value/100;
+    const bonus=+document.getElementById('csBonus').value/100;
+    const aptBldgReclass5=aptBldg*cs5, aptBldgReclass15=aptBldg*cs15;
+    const aptBldgBase = aptBldg - aptBldgReclass5 - aptBldgReclass15;
+    const aptDepNew = aptBldgBase/27.5 + aptBldgReclass5*(1-bonus)/5 + aptBldgReclass15*(1-bonus)/15;
+    annualDepTotal = aptDepNew + mainDep;
+  }
+  const capRate=+capRate_.value/100;
+  const instYrs=+instYears_.value, instDownPct=+instDown_.value/100, instRate=+instRate_.value;
+  const mortBal=+mortBal_.value, mortRate=+mortRate_.value, mortTerm=+mortTerm_.value;
+  const payoffAt=y=>mortBalAfter(mortBal,mortRate,mortTerm,y);
+  const fOrd=fedOrd(otherInc,filing);
+  const rentalShareOfInt = aptPct + (1-aptPct)*biz;
+  const aptShare=aptPct, mainShare=1-aptPct;
+
+  function scheduleE(yearIdx){
+    const intYr=mortInterestYr(mortBal,mortRate,mortTerm,yearIdx);
+    const deductibleInt=intYr*rentalShareOfInt;
+    const grossRent=(rent*12)+(aptRent*12);
+    const cashOpex=opex*biz + aptOpex;
+    const taxableNet=grossRent - cashOpex - deductibleInt - annualDepTotal;
+    const fedT=Math.max(0,taxableNet)*fOrd;
+    const njT=njTax(Math.max(0,taxableNet),filing);
+    const pmtYr=mortPmt(mortBal,mortRate,mortTerm)*12;
+    const cashAfterTax=grossRent - (opex*biz+aptOpex) - pmtYr - fedT - njT;
+    return {grossRent,cashOpex,deductibleInt,taxableNet,fedT,njT,cashAfterTax,pmtYr,intYr};
+  }
+  function schedESum(N){let cum=0;for(let y=0;y<N;y++){cum+=scheduleE(y).cashAfterTax;}return {cum};}
+  const sE0=scheduleE(0);
+
+  const p1=fmv, sc1=p1*sellPct, g1=p1-sc1-basisFull;
+  const gainMain1=g1*mainShare, gainApt1=g1*aptShare;
+  const tg1=Math.max(0,gainMain1-excl)+Math.max(0,gainApt1);
+  const tt1=ltcgTax(tg1,otherInc,filing)+niit(tg1,otherInc,filing)+njMarg(tg1,otherInc,filing);
+  const np1=p1-sc1-tt1-payoffAt(0);
+
+  const p2=fmv, sc2=p2*sellPct, g2=p2-sc2-basisFull;
+  const tg2=Math.max(0,g2*mainShare-excl)+Math.max(0,g2*aptShare);
+  const tt2=ltcgTax(tg2,otherInc,filing)+niit(tg2,otherInc,filing)+njTax(tg2,filing);
+  const np2=p2-sc2-tt2-payoffAt(0);
+
+  const p3=fmv*Math.pow(1+appr,N), sc3=p3*sellPct;
+  const depTotalN=annualDepTotal*N;
+  const ab3=basisFull-depTotalN;
+  const g3=p3-sc3-ab3, lose121=N>=3;
+  const exclUsed3=lose121?0:excl*mainShare;
+  const cg3=Math.max(0,g3-depTotalN-exclUsed3);
+  const tt3sale=depTotalN*.25+ltcgTax(cg3,otherInc,filing)+niit(cg3+depTotalN,otherInc,filing)+njTax(cg3+depTotalN,filing);
+  const se3=schedESum(N);
+  const np3=p3-sc3-tt3sale-payoffAt(N)+se3.cum;
+
+  const sc4=fmv*sellPct;
+  const eq4=fmv-sc4-payoffAt(0);
+  const fv4=eq4*Math.pow(1+capRate,N);
+  const np4=fv4;
+
+  const p5=fmv, sc5=p5*sellPct, g5=p5-sc5-basisFull;
+  const tg5=Math.max(0,g5*mainShare-excl)+Math.max(0,g5*aptShare);
+  const gpp5=tg5/(p5-sc5);
+  const down5=(p5-sc5)*instDownPct, fin5=(p5-sc5)-down5;
+  const sch5=amort(fin5,instRate,instYrs);
+  const y0g5=down5*gpp5;
+  let cum5=down5-(ltcgTax(y0g5,otherInc,filing)+niit(y0g5,otherInc,filing)+njTax(y0g5,filing))-payoffAt(0);
+  for(const r of sch5){const gP=r.p*gpp5;const at=r.pmt-(ltcgTax(gP,otherInc,filing)+niit(gP,otherInc,filing)+njTax(gP,filing)+r.i*fOrd+njTax(r.i,filing));cum5+=at;}
+  const np5=cum5;
+
+  const p6=fmv*Math.pow(1+appr,N), sc6=p6*sellPct;
+  const ab6=basisFull-depTotalN, g6=p6-sc6-ab6;
+  const cg6=Math.max(0,g6-depTotalN-(N>=3?0:excl*mainShare));
+  const recTaxNow=depTotalN*.25+niit(depTotalN,otherInc,filing)+njTax(depTotalN,filing);
+  const gppLT6=cg6/(p6-sc6);
+  const down6=(p6-sc6)*instDownPct, fin6=(p6-sc6)-down6;
+  const sch6=amort(fin6,instRate,instYrs);
+  const se6=schedESum(N);
+  const y0gLT6=down6*gppLT6;
+  let cum6=se6.cum + down6 - recTaxNow - (ltcgTax(y0gLT6,otherInc,filing)+niit(y0gLT6,otherInc,filing)+njTax(y0gLT6,filing)) - payoffAt(N);
+  for(const r of sch6){const gLT=r.p*gppLT6;const at=r.pmt-(ltcgTax(gLT,otherInc,filing)+niit(gLT,otherInc,filing)+njTax(gLT,filing)+r.i*fOrd+njTax(r.i,filing));cum6+=at;}
+  const np6=cum6;
+
+  const giftExclAmt=+giftExcl_.value, donors=+giftDonors_.value, disc=+giftDisc_.value/100, giftYrs=+giftYears_.value;
+  const annualGiftFMV = giftExclAmt * donors / (1-disc);
+  let ownerShare=1.0, pv=fmv, cumGiftedFMV=0;
+  for(let y=1;y<=giftYrs;y++){
+    const frac = Math.min(ownerShare, annualGiftFMV/pv);
+    ownerShare -= frac; cumGiftedFMV += frac*pv;
+    pv *= (1+appr);
+  }
+  for(let y=giftYrs;y<N;y++) pv *= (1+appr);
+  const p7=pv, sc7=p7*sellPct, g7=p7-sc7-basisFull;
+  const ownerGain7=g7*ownerShare;
+  const tg7=Math.max(0,ownerGain7-(N>=3?0:excl*mainShare*ownerShare))-depTotalN*ownerShare;
+  const recTax7=depTotalN*ownerShare*.25;
+  const tt7=recTax7+ltcgTax(Math.max(0,tg7),otherInc,filing)+niit(Math.max(0,tg7)+depTotalN*ownerShare,otherInc,filing)+njTax(Math.max(0,tg7)+depTotalN*ownerShare,filing);
+  const np7 = ownerShare*(p7-sc7-payoffAt(N)) - tt7 + se3.cum*ownerShare;
+  const estateReduction = cumGiftedFMV;
+
+  const s8 = calcS8(np2, fmv, basisFull, filing, otherInc, appr, N);
+  const np8 = s8.error ? 0 : s8.ownerNetN;
+
+  const s9 = calcS9(fmv, basisFull, filing, otherInc, appr, N, sellPct, excl, annualDepTotal, payoffAt, scheduleE, mainShare);
+  const np9 = s9.ownerProceeds;
+
+  const baseline=np2;
+  function irrFor(np,years){if(baseline<=0||np<=0) return 0;return Math.pow(np/baseline, 1/Math.max(1,years))-1;}
+
+  net1_.textContent=fmt(np1);net2_.textContent=fmt(np2);net3_.textContent=fmt(np3);
+  net4_.textContent=fmt(np4);net5_.textContent=fmt(np5);net6_.textContent=fmt(np6);net7_.textContent=fmt(np7);
+  net8_.textContent=fmt(np8);net9_.textContent=fmt(np9);
+  irr1_.textContent="baseline";irr2_.textContent="baseline";
+  irr3_.textContent="CAGR "+pct(irrFor(np3,N));
+  irr4_.textContent="CAGR "+pct(irrFor(np4,N));
+  irr5_.textContent="CAGR "+pct(irrFor(np5,instYrs));
+  irr6_.textContent="CAGR "+pct(irrFor(np6,N+instYrs));
+  irr7_.textContent="CAGR "+pct(irrFor(np7,N));
+  irr8_.textContent="CAGR "+pct(irrFor(np8,N));
+  irr9_.textContent="CAGR "+pct(irrFor(np9,N))+" · D:"+fmt(s9.daughterProceeds);
+window._details={
+    1:[["Sale price",p1],["Basis",-basisFull],["Gain",g1],["Total tax",tt1],["Mortgage payoff",-payoffAt(0)],["Net proceeds",np1]],
+    2:[["Sale price",p2],["Basis",-basisFull],["Gain",g2],["Total tax",tt2],["Mortgage payoff",-payoffAt(0)],["Net proceeds",np2]],
+    3:[["Sale price Yr "+N,p3],["Accum dep",depTotalN],["Gain",g3],["Sale tax",tt3sale],["Cum rent",se3.cum],["Mortgage payoff",-payoffAt(N)],["Net proceeds",np3]],
+    4:[["Equity rolled",eq4],["Cap rate",capRate*100+"%"],["FV Yr "+N,fv4],["Net proceeds",np4]],
+    5:[["Sale price",p5],["Gain",g5],["GP%",(gpp5*100).toFixed(2)+"%"],["Down",down5],["Cumulative",np5]],
+    6:[["Rental years",N],["Sale Yr "+N,p6],["Recapture now",-recTaxNow],["Cum rent",se6.cum],["Final",np6]],
+    7:[["Annual exclusion",giftExclAmt],["Donors",donors],["Discount",disc*100+"%"],["FMV gifted",cumGiftedFMV],["Owner share",pct(ownerShare)],["Net to owner",np7],["Estate removed",estateReduction]],
+    8:s8.error?[["ERROR",s8.error],["Available",np2],["Needed",s8.giftToDaughter+s8.piedCashNeeded]]:
+      [["NJ proceeds",np2],["Gift to daughter",-s8.giftToDaughter],["Pied-à-terre cash",-s8.piedCashNeeded],["Equity capital",s8.equityCapital],["Equity FV Yr "+N,s8.eqValN],["Pied equity Yr "+N,s8.piedEquityN],["Cum carry",-s8.cumCarry],["Owner net",np8],["Family net",s8.familyNetN]],
+    9:[["Daughter init equity",+s9DaughterEq_.value],["Init D%",(s9.initDFrac*100).toFixed(2)+"%"],["Daughter annual",+s9DaughterAnnual_.value],["Owner ending %",(s9.ownerShare*100).toFixed(2)+"%"],["Daughter ending %",(s9.dShare*100).toFixed(2)+"%"],["Sale Yr "+N,s9.pN],["Owner proceeds",np9],["Daughter proceeds",s9.daughterProceeds],["Family total",s9.familyTotal],["Estate removed",s9.estateRemoved]],
+    10:[["Gross rent",sE0.grossRent],["Cash opex",-sE0.cashOpex],["Mort int deductible",-sE0.deductibleInt],["Depreciation",-annualDepTotal],["Taxable net",sE0.taxableNet],["Fed tax",-sE0.fedT],["NJ tax",-sE0.njT],["P&I cash",-sE0.pmtYr],["After-tax cash",sE0.cashAfterTax]]
+  };
+  showTab(window._activeTab||1);buildPrintAll();
+
+  const YRS=20, series={S1:[],S2:[],S3:[],S4:[],S5:[],S6:[],S7:[],S8:[],S9:[]};
+  for(let y=0;y<=YRS;y++){
+    series.S1.push(np1);series.S2.push(np2);
+    const pY=fmv*Math.pow(1+appr,y), scY=pY*sellPct, depY=annualDepTotal*y, abY=basisFull-depY;
+    const gY=pY-scY-abY;
+    const cgY=Math.max(0,gY-depY-(y>=3?0:excl*mainShare));
+    const taxY=depY*.25+ltcgTax(cgY,otherInc,filing)+niit(cgY+depY,otherInc,filing)+njTax(cgY+depY,filing);
+    let cumE=0;for(let k=0;k<y;k++)cumE+=scheduleE(k).cashAfterTax;
+    series.S3.push(pY-scY-taxY-payoffAt(y)+cumE);
+    series.S4.push(eq4*Math.pow(1+capRate,y));
+    series.S5.push(np5);
+    series.S6.push(np6);
+    const ownerY = y<giftYrs ? 1-((y/giftYrs)*(1-ownerShare)) : ownerShare;
+    series.S7.push((pY-scY-taxY-payoffAt(y)+cumE)*ownerY);
+    series.S8.push(s8.error?0:(s8.flow[Math.min(y,s8.flow.length-1)]?.val||np8));
+    const s9OwnerY = y<N ? 1-((y/N)*(1-s9.ownerShare)) : s9.ownerShare;
+    series.S9.push((pY-scY-taxY-payoffAt(y)+cumE)*s9OwnerY);
+  }
+  drawChart(YRS,series);
+
+  const iters=+mcIter_.value, mcMean=+mcMean_.value/100, mcStd=+mcStd_.value/100;
+  const se3sum=se3.cum;
+  const allRes={S3:[],S4:[],S6:[],S7:[],S8:[]};
+  for(let it=0;it<iters;it++){
+    let v=fmv;for(let y=0;y<N;y++) v*=(1+mcMean+mcStd*randn());
+    const scM=v*sellPct,depM=annualDepTotal*N,abM=basisFull-depM,gM=v-scM-abM;
+    const cgM=Math.max(0,gM-depM-(N>=3?0:excl*mainShare));
+    const taxM=depM*.25+ltcgTax(cgM,otherInc,filing)+niit(cgM+depM,otherInc,filing)+njTax(cgM+depM,filing);
+    allRes.S3.push(v-scM-taxM-payoffAt(N)+se3sum);
+    allRes.S4.push(eq4*Math.pow(1+capRate+mcStd*randn()*0.3,N));
+    allRes.S6.push(np6);
+    allRes.S7.push((v-scM-taxM-payoffAt(N)+se3sum)*ownerShare);
+    const eqRet=(+s8EqReturn_.value/100)+0.15*randn();
+    const eqFV=(s8.equityCapital||0)*Math.pow(1+eqRet,N);
+    allRes.S8.push(eqFV+(s8.piedEquityN||0)-(s8.cumCarry||0));
+  }
+  for(const k of Object.keys(allRes)) allRes[k].sort((a,b)=>a-b);
+  const statsBy={};
+  for(const k of Object.keys(allRes)){const r=allRes[k];statsBy[k]={p10:r[Math.floor(iters*.1)],p50:r[Math.floor(iters*.5)],p90:r[Math.floor(iters*.9)]};}
+  const _staticMap={S1:np1,S2:np2,S5:np5,S9:np9};
+  const mcAllDiv=document.getElementById('mcAll');
+  mcAllDiv.innerHTML=["S1","S2","S3","S4","S5","S6","S7","S8","S9"].map(k=>{
+    const s = (k in _staticMap) ? {p10:_staticMap[k],p50:_staticMap[k],p90:_staticMap[k]} : (statsBy[k]||{p10:0,p50:0,p90:0});
+    return `<div class="mc-stat"><div class="l">${k}</div><div style="font-size:11px">P10 <b>${fmtK(s.p10)}</b></div><div style="font-size:11px">P50 <b>${fmtK(s.p50)}</b></div><div style="font-size:11px">P90 <b>${fmtK(s.p90)}</b></div></div>`;
+  }).join("");
+  drawMC(allRes.S3);
+
+  const d=new Date();
+  printDate_.textContent=d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  printClient_.textContent="Prepared for: "+(clientName_.value||"Client");
+}
+
+function renderTable(rows){let h="<table><thead><tr><th>Line</th><th class='num'>Amount</th></tr></thead><tbody>";
+  rows.forEach(([k,v])=>{const n=typeof v==='number';const c=n&&v<0?'neg':n&&v>0?'pos':'';h+=`<tr><td>${k}</td><td class='num ${c}'>${n?fmt(v):v}</td></tr>`;});
+  return h+"</tbody></table>";}
+function showTab(n){window._activeTab=n;document.querySelectorAll('.tab button').forEach((b,i)=>b.classList.toggle('active',i===n-1));detail_.innerHTML=renderTable((window._details||{})[n]||[]);}
+function buildPrintAll(){const t={1:"S1",2:"S2",3:"S3",4:"S4",5:"S5",6:"S6",7:"S7",8:"S8",9:"S9",10:"Sched E"};let h="";for(const k of [1,2,3,4,5,6,7,8,9,10])h+=`<div class='card'><h2>${t[k]}</h2>${renderTable(window._details[k])}</div>`;printAll_.innerHTML=h;}
+
+let chartObj=null,mcObj=null;
+function drawChart(YRS,s){
+  const labels=Array.from({length:YRS+1},(_,i)=>"Yr "+i);
+  const cfg={type:'line',data:{labels,datasets:[
+    {label:'S1',data:s.S1,borderColor:'#0b6fb8',tension:.1},
+    {label:'S2',data:s.S2,borderColor:'#0e7c5a',tension:.1},
+    {label:'S3',data:s.S3,borderColor:'#b45309',tension:.1},
+    {label:'S4',data:s.S4,borderColor:'#7c3aed',tension:.1},
+    {label:'S5',data:s.S5,borderColor:'#b91c1c',tension:.1},
+    {label:'S6',data:s.S6,borderColor:'#db2777',borderDash:[5,3],tension:.1},
+    {label:'S7',data:s.S7,borderColor:'#059669',borderDash:[2,2],tension:.1},
+    {label:'S8',data:s.S8,borderColor:'#2563eb',borderWidth:2.5,tension:.1},
+    {label:'S9',data:s.S9,borderColor:'#65a30d',borderWidth:2.5,borderDash:[6,2],tension:.1}
+  ]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10}}}},scales:{y:{ticks:{callback:v=>"$"+(v/1e6).toFixed(1)+"M"}}}}};
+  if(chartObj)chartObj.destroy();chartObj=new Chart(document.getElementById('chart'),cfg);
+}
+function drawMC(res){const bins=30,min=res[0],max=res[res.length-1],w=(max-min)/bins||1;const c=Array(bins).fill(0);res.forEach(v=>{let i=Math.min(bins-1,Math.floor((v-min)/w));c[i]++;});const labels=c.map((_,i)=>fmtK(min+i*w));const cfg={type:'bar',data:{labels,datasets:[{data:c,backgroundColor:'#0b6fb8aa'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:8},maxRotation:60,minRotation:45}}}}};if(mcObj)mcObj.destroy();mcObj=new Chart(document.getElementById('mcChart'),cfg);}
+
+const PROF_KEY="vap_home_profiles_v6";
+const FIELDS=["clientName","fmv","basis","improve","landPct","sellPct","filing","otherInc","appr","years","rent","opex","bizFrac","aptPct","aptRent","aptOpex","capRate","instYears","instDown","instRate","mortBal","mortRate","mortTerm","mcMean","mcStd","mcIter","giftExcl","giftDonors","giftDisc","giftYears","csOn","cs5","cs15","csBonus","s8DaughterHome","s8DaughterDown","s8DaughterCC","s8PiedPrice","s8PiedFin","s8PiedCarry","s8PiedAppr","s8EqReturn","s8Div","s8EqBasis","s9DaughterEq","s9DaughterAnnual","s9GiftPctYr","s9DaughterPrimary"];
+function readP(){try{return JSON.parse(localStorage.getItem(PROF_KEY)||"{}")}catch(e){return{}}}
+function writeP(p){localStorage.setItem(PROF_KEY,JSON.stringify(p));}
+function refreshList(){const p=readP(),s=profileList_;s.innerHTML="";Object.keys(p).sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;s.appendChild(o);});if(!s.options.length){const o=document.createElement('option');o.textContent="(none)";s.appendChild(o);}}
+function saveProfile(){const name=(clientName_.value||"Client").trim();if(!name)return;const p=readP();p[name]={};FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)p[name][k]=el.type==='checkbox'?el.checked:el.value;});writeP(p);refreshList();profileList_.value=name;alert("Saved: "+name);}
+function loadProfile(){const n=profileList_.value,p=readP();if(!p[n])return;FIELDS.forEach(k=>{const el=document.getElementById(k);if(el&&p[n][k]!==undefined){if(el.type==='checkbox')el.checked=p[n][k];else el.value=p[n][k];}});calc();}
+function deleteProfile(){const n=profileList_.value,p=readP();if(!p[n])return;if(!confirm("Delete "+n+"?"))return;delete p[n];writeP(p);refreshList();}
+
+["clientName","profileList","fmv","basis","improve","landPct","sellPct","filing","otherInc","appr","years","rent","opex","bizFrac",
+ "aptPct","aptRent","aptOpex","capRate","instYears","instDown","instRate","mortBal","mortRate","mortTerm","mcMean","mcStd","mcIter",
+ "giftExcl","giftDonors","giftDisc","giftYears","csOn","cs5","cs15","csBonus",
+ "s8DaughterHome","s8DaughterDown","s8DaughterCC","s8PiedPrice","s8PiedFin","s8PiedCarry","s8PiedAppr","s8EqReturn","s8Div","s8EqBasis",
+ "s9DaughterEq","s9DaughterAnnual","s9GiftPctYr","s9DaughterPrimary",
+ "net1","net2","net3","net4","net5","net6","net7","net8","net9","irr1","irr2","irr3","irr4","irr5","irr6","irr7","irr8","irr9",
+ "detail","printDate","printClient","printAll"].forEach(id=>window[id+"_"]=document.getElementById(id));
+refreshList();calc();
+</script>
+</body>
+</html>
+
